@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Metadata & User State
+  postgres:
+    image: postgres:15-alpine
+    container_name: mlops_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mlops_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mlops_password}
+      POSTGRES_DB: ${POSTGRES_DB:-mlops_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlops_user -d mlops_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # MLflow Tracking Server
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.11.3
+    container_name: mlops_mlflow
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlruns
+    command: mlflow server --backend-store-uri sqlite:////mlruns/mlflow.db --default-artifact-root /mlruns --host 0.0.0.0 --port 5000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # FastAPI REST Backend Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mlops_api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://mlops_user:mlops_password@postgres:5432/mlops_db
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-super-secret-production-jwt-key-321}
+    volumes:
+      - api_data:/app/data
+      - api_models:/app/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Streamlit UI Dashboard
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mlops_dashboard
+    restart: always
+    ports:
+      - "8501:8501"
+    environment:
+      BACKEND_API_URL: http://api:8000/api/v1
+    depends_on:
+      - api
+    command: streamlit run app/dashboard/app.py --server.port=8501 --server.address=0.0.0.0
+
+  # Prometheus Performance Metrics Collection
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: mlops_prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+volumes:
+  postgres_data:
+  mlflow_data:
+  api_data:
+  api_models:
