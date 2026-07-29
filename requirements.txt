@@ -1,0 +1,45 @@
+python-dotenv
+pyyaml
+pydantic
+pydantic-settings
+
+# Data Processing & Analysis
+numpy
+pandas
+openpyxl
+scipy
+
+# Machine Learning & Modeling
+scikit-learn
+xgboost
+lightgbm
+catboost
+joblib
+shap
+
+# MLOps & Experiment Tracking
+mlflow
+dvc
+
+# Web Framework & API
+fastapi
+uvicorn[standard]
+python-multipart
+passlib[bcrypt]
+python-jose[cryptography]
+
+# Dashboard & Visualization
+streamlit
+plotly
+matplotlib
+seaborn
+
+# Database & Storage
+sqlalchemy
+
+# Testing & Quality Assurance
+pytest
+pytest-cov
+httpx
+flake8
+black
