@@ -1,0 +1,43 @@
+app:
+  name: "MLOps Production Pipeline Platform"
+  version: "1.0.0"
+  env: "production"
+  secret_key: "CHANGE_THIS_TO_A_CRYPTOGRAPHICALLY_SECURE_SECRET_IN_PRODUCTION"
+  algorithm: "HS256"
+  access_token_expire_minutes: 120
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+
+streamlit:
+  port: 8501
+
+database:
+  url: "sqlite:///./data/mlops_platform.db"
+
+paths:
+  raw_data_dir: "./data/raw"
+  processed_data_dir: "./data/processed"
+  models_dir: "./models"
+  reports_dir: "./reports"
+  logs_dir: "./logs"
+
+mlflow:
+  tracking_uri: "sqlite:///./mlruns/mlflow.db"
+  artifact_location: "./mlruns/artifacts"
+  experiment_name: "MLOps_Automated_Pipeline"
+
+training:
+  test_size: 0.2
+  random_state: 42
+  cv_folds: 5
+  hyperparameter_tuning:
+    max_evals: 15
+    scoring_classification: "f1_weighted"
+    scoring_regression: "neg_mean_squared_error"
+
+monitoring:
+  drift_threshold_p_value: 0.05
+  min_samples_for_drift: 20
