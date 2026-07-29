@@ -43,3 +43,4 @@ pytest-cov
 httpx
 flake8
 black
+prometheus-fastapi-instrumentator>=7.0.0
