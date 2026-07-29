@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mlops-pipeline-platform"
+version = "1.0.0"
+description = "Production-grade automated end-to-end MLOps Pipeline Platform"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "MLOps Architect", email = "architect@mlops-platform.io" }
+]
+dependencies = [
+    "fastapi",
+    "streamlit",
+    "scikit-learn",
+    "xgboost",
+    "lightgbm",
+    "catboost",
+    "mlflow",
+    "shap",
+    "pandas",
+    "sqlalchemy"
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | mlruns
+)/
+'''
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --cov=app --cov-report=term-missing"
+testpaths = [
+    "tests",
+]
+pythonpath = [
+    "."
+]
